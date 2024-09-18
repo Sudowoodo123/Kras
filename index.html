@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="tl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crush Form</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Link sa CSS file -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url('background.jpg'); /* Palitan ito ng tamang path ng image */
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.075);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            margin: 20px;
+        }
+
+        .radio-button {
+            display: inline-block;
+            width: 120px; /* Pantay na lapad */
+            padding: 10px 20px;
+            margin: 5px;
+            border: 2px solid #ff4081;
+            border-radius: 5px;
+            background-color: transparent;
+            color: #ff4081;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            text-align: center;
+        }
+
+        .radio-button.selected {
+            background-color: #ff4081;
+            color: white;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 24px; /* Pinalaking font size */
+            color: #ff4081;
+            display: none; /* Itago sa simula */
+        }
+
+        #loading {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #ff4081;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #loadingText {
+            font-size: 20px;
+            color: #ff4081;
+            margin-top: 10px;
+        }
+
+        #percentage {
+            font-size: 24px;
+            color: #ff4081;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Alamin ang tungkol sa iyong crush!</h1>
+        <form id="crushForm">
+            <label for="userName">Ano ang iyong pangalan:</label><br>
+            <input type="text" id="userName" required><br><br>
+
+            <label for="crushName">Pangalan ng iyong crush:</label><br>
+            <input type="text" id="crushName" required><br><br>
+
+            <label>Sa tingin mo gusto ka nya?</label><br>
+            <div id="radioButtons">
+                <div class="radio-button" id="yesButton">Oo</div>
+                <div class="radio-button" id="noButton">Hinde</div>
+            </div><br>
+
+            <button type="button" id="findOutButton">Let's Find Out</button>
+        </form>
+
+        <div id="loading">
+            <div class="loader"></div>
+            <p id="loadingText">Ang katotohanan ay...</p>
+            <p id="percentage">0%</p>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const yesMessages = [
+            "Bagay Kayo UWU",
+            "Edi Sana All",
+            "Poreber mo na sya",
+            "Ayieee, Gusto ka rin daw niya!",
+            "Ligawan mo na ",
+
+        ];
+    
+        const noMessages = [
+            "Di kayo para sa isat isa",
+            "Sumuko ka na lang",
+            "Kalokohan lang ang nararamdaman mo",
+            "Asa ka naman",
+            "Wag na, iba na lang",
+            "Supot ka kase",
+        ];
+
+        let canFindOut = true; // Flag para sa estado ng button
+
+        function showRandomMessage(messages) {
+            const randomIndex = Math.floor(Math.random() * messages.length);
+            document.getElementById('result').innerText = messages[randomIndex];
+            document.getElementById('result').style.display = 'block';
+        }
+
+        function selectButton(button) {
+            const buttons = document.querySelectorAll('.radio-button');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            button.classList.add('selected');
+        }
+
+        document.getElementById('yesButton').addEventListener('click', function() {
+            selectButton(this);
+        });
+
+        document.getElementById('noButton').addEventListener('click', function() {
+            selectButton(this);
+        });
+
+        document.getElementById('findOutButton').addEventListener('click', function() {
+            if (!canFindOut) return; // Huwag magpatuloy kung hindi na puwedeng mag-generate
+
+            const selectedButton = document.querySelector('.radio-button.selected');
+
+            if (selectedButton) {
+                const loading = document.getElementById('loading');
+                loading.style.display = 'block';
+                document.getElementById('result').style.display = 'none';
+                document.getElementById('percentage').innerText = '0%';
+
+                let progress = 0;
+                const interval = setInterval(() => {
+                    if (progress < 100) {
+                        progress += 5;
+                        document.getElementById('percentage').innerText = `${progress}%`;
+                    } else {
+                        clearInterval(interval);
+                        const response = selectedButton.textContent.trim().toLowerCase();
+
+                        if (response === 'oo') {
+                            showRandomMessage(yesMessages);
+                        } else {
+                            showRandomMessage(noMessages);
+                        }
+                        loading.style.display = 'none';
+                        canFindOut = false; // Itakda ang flag upang hindi na muling mag-generate
+                    }
+                }, 100);
+            } else {
+                alert("Pakisiguradong pumili ng 'Oo' o 'Hinde'.");
+            }
+        });
+
+        // I-reset ang form kapag nag-input ulit ang user
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', function() {
+                canFindOut = true; // I-reset ang estado ng button
+                document.querySelectorAll('.radio-button').forEach(btn => btn.classList.remove('selected')); // I-reset ang mga button
+                document.getElementById('result').style.display = 'none'; // Itago ang resulta
+                document.getElementById('loading').style.display = 'none'; // Itago ang loading
+                document.getElementById('percentage').innerText = '0%'; // I-reset ang percentage
+            });
+        });
+    </script>
+</body>
+</html>
